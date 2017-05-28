@@ -35,6 +35,8 @@ LOG_HNDLR.setFormatter(
         datefmt='%Y-%m-%d %H:%M:%S'))
 APP.logger.addHandler(LOG_HNDLR)
 
+APP.geolite_country_db = geoip2.database.Reader(
+    CFG['GEOLITE_DB']['country'], locales=['en'], mode=geoip2.database.MODE_MMAP)
 APP.geolite_city_db = geoip2.database.Reader(
     CFG['GEOLITE_DB']['city'], locales=['en'], mode=geoip2.database.MODE_MMAP)
 
@@ -86,12 +88,21 @@ def get_city(ip_str=None):
         return _json_response({'error': True, 'status': 400}, status=400)
 
     try:
-        city = APP.geolite_city_db.city(ip_str)
+        country_db_res = APP.geolite_country_db.country(ip_str)
+    except ValueError:
+        return _json_response({'error': True, 'status': 412}, status=412)
+
+    try:
+        city_db_res = APP.geolite_city_db.city(ip_str)
     except ValueError:
         return _json_response({'error': True, 'status': 412}, status=412)
 
     return _json_response(
-        {'error': False, 'status': 200, 'city': city.country.iso_code},
+        {
+            'error': False,
+            'status': 200,
+            'country_by_country_db': country_db_res.country.iso_code,
+            'country_by_city_db': city_db_res.country.iso_code},
         status=200)
 
 

@@ -20,6 +20,8 @@ CFG = dict(
     PORT=9100,
     JSONIFY_PRETTYPRINT_REGULAR=False,
     GEOLITE_DB={
+        'country': os.path.join(
+            os.path.dirname(__file__), '..', 'GeoLite2-Country.mmdb'),
         'city': os.path.join(
             os.path.dirname(__file__), '..', 'GeoLite2-City.mmdb'),
     },
